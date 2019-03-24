@@ -1,8 +1,11 @@
 import argparse
 import hashlib
 import secrets
+
 from galoisfield import *
 from polyring import *
+import split
+import recover
 
 PRIME = 2**521 - 1
 
@@ -18,6 +21,9 @@ def to_hex(m):
     return hex(m).lstrip('0x')
 
 def validate_ms(p0, p1):
+    ''' Validate if 
+        p(1) == sha512(master seed = p(0))
+    '''
     ms_rec = to_hex(p0)
     hash_ms_rec = to_hex(sha512(ms_rec))
     hash_ms_eva = to_hex(p1)
@@ -30,30 +36,77 @@ def validate_ms(p0, p1):
     else:
         return False
 
+
+def get_parser():
+
+    # Step 1: Create an ArgumentParser object with description
+    # Define object
+    parser = argparse.ArgumentParser(description='Master seed of a HDW backup and recover tool')
+
+    # Add optional arguments of msrecover
+    parser.add_argument('--version', action="store_true",
+                        help='version of %(prog)s')
+    parser.add_argument('--verbose', action="store_true",
+                        help='version of %(prog)s')
+
+    # Add subparsers
+    subparsers = parser.add_subparsers(title='Functions', description='Valid functions', dest='subcommand')
+
+    # msrecover split parser
+    parser_split = subparsers.add_parser('split', help='split help')
+    parser_split.add_argument('--validation', action='store_true', help="Put validation mark on shares")
+    parser_split.set_defaults(func=split)
+
+    # msrecover recover parser
+    parser_recover = subparsers.add_parser('recover', help='Recover master seed form "k" shares')
+    parser_recover.add_argument('--qrcode', action='store_true', help="Read shares from QR files") #need filenames as arguments!
+    parser_recover.set_defaults(func=recover)
+
+    return parser
+
 def main():
     
-    parser = argparse.ArgumentParser(description="Backup and recover master seed HDW")
+    # Read arguments from command line
+    parser = get_parser()
+    args = parser.parse_args()
+    
+    print(args)
 
-    # Optional and mutually exclusive arguments
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-r", "--recover", action="store_true")
-    group.add_argument("-s", "--split",   action="store_true")
+    if args.subcommand == 'split':
+        # Do split things:
+            # get_master_seed
+                # from hex format
+                # from bip-39 words
+            # if shares_signed:
+                # Generate k+1 point to get a p(x) of degree k
+                    # p0 = (0, ms) and p1 = (1, sha512(ms))
+                    # get (i, x_i) i=2,...,k
+                # Build p(x) Lagrange Interpolation
+            # else:
+                # Generate k coeficients a_i i=1,...,k and a_0 = ms
+                # Build p(x) = a_0 + a_1*X + ... + a_k*X^k
 
-    # Positional arguments
-    #parser.add_argument("x", type=int, help="the base")
-    #parser.add_argument("y", type=int, help="the exponent")
-    #args = parser.parse_args()
-    #answer = args.x**args.y
+            # Evaluate n points of p(x): (i, p(i)) i=2,...,n+2
+            # Generate n shares (i+p(i))
+            # Format of n shares
+                # share_signed
+                # bip-39
+            # Output of n shares
+                # QR format (n files)
+                # text format (screen or files)
 
-    #if args.quiet:
-    #    print(answer)
-    #elif args.verbose:
-    #    print("{} to the power {} equals {}".format(args.x, args.y, answer))
-    #else:
-    #    print("{}^{} == {}".format(args.x, args.y, answer))
-
-
-    # TODO: Manage sys arguments
+    elif args.subcommand = 'recover':
+        # Do recover things:
+            # get_k_shares in hex format
+                # from qr (files)
+                # from text (screen or files)
+            # Generate points from k shares (i, p(i)) i = 2,..., k+2
+            # Generate p(x) Lagrange Interpolation
+                # evaluate p(0)
+                # evaluate p(1) == sha512(p(0))
+            # Output of p(0)
+    else:
+        parser.print_usage()
 
     #ms_str = input("Insert master seed of your HDW: ")
     ms_str = secrets.token_hex(64)

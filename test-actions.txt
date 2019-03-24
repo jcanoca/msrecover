@@ -1,0 +1,22 @@
+msrecover -h
+msrecover --help
+msrecover --verbose
+msrecover -v
+
+%
+msrecover split [--num-shares N] [--threshold K] [--ms-bip39] [--share-signed] [--share-bip39] [--fileout [qr | text] ]
+%
+
+Master Seed in text or bip39 format (Text/BIP39)
+
+--> BIP-39
+Numer of words (BIP39 format):
+Insert words:
+
+--> Text (64 bytes)
+Insert Master Seed:
+
+msrecover recover [--num-shares K] [--filein]
+
+Number of shares to recover Master Seed:
+
