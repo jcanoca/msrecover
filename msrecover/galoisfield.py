@@ -5,7 +5,7 @@ def GF(p):
         """Galois Field objects"""
 
         def __init__(self, n):
-            # TODO: Validate p is prime
+            # TODO: Check te p is prime
             self.n = n % p
             self.field = GaloisField
 
@@ -34,7 +34,7 @@ def GF(p):
             return not self.__eq__(other)
 
         def __inv(self):
-            d, _, y = self.__eea(self.p, self.n) # (p,a)=1 ==> 1 = p*x + a*y ==> a*y = 1 (mod p)
+            d, _, y = self.__eea(p, self.n) # (p,a)=1 ==> 1 = p*x + a*y ==> a*y = 1 (mod p)
             # '_' for dummy variable
             if d == 1:
                 return y # 1 = p*x + a*y (mod p) ==> a*y = 1 ==> y inverse mod p
