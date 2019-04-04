@@ -35,9 +35,7 @@ def main():
     
     logging.basicConfig(format='[%(asctime)s.%(msecs)03d] [%(levelname)s] [%(module)s - %(funcName)s]: %(message)s',datefmt='%Y-%m-%d %H:%M:%S', level=level_log)
     
-    
     logging.debug(args)
-    logging.critical(args)
 
     # Inicialitzem cos finit i anell de polinomis sobre aquest cos finit
     K = GF(PRIME)
@@ -58,7 +56,7 @@ def main():
             print_user("Exiting...")
             exit(0)
 
-        # Input MS in bip39 format or hex text
+        # Master Seed en format BIP-0039 o text en HEX
         if args.bip39 == True:
             words = input("Insert nmonemic words (space between words): ")
             
@@ -78,7 +76,7 @@ def main():
         print_user("You've chosen a ({}, {})-threshold Shamir's schema".format(args.shares, args.threshold))
 
         # Generem els "n" trossos
-        # share_list = split(m, k, master_seed, check)
+        # TODO: share_list = split(m, k, master_seed, check)
 
         if args.check == True:
             points = []
@@ -95,41 +93,40 @@ def main():
                 y = int(y_str, 16)
                 points.append((i+2, y)) # i=0,1 out
 
-            # we need 2 points more, so we generate the polynomial interpolation
-            print_trace("Splitting secret","Generating Lagrange Interpolation")
+            # Generem dos punts més, generem primer el polinomi interpolador
+            logging.debug("Generating Lagrange Interpolation")
             polyInt = F.interpolate(points, K)
             
             logging.debug((polyInt))
 
             # Check p(1) = sha512(p(0))
             if check_ms(polyInt.eval(0).n,polyInt.eval(1).n) :
-                print_trace("Checking shares","master seed recovered succesfully!")
+                print_user("Mater Seed integrity ok")
             
-            # Generate n shares (i=2,...,n+2)
+            # Generem n shares (i=2,...,n+2)
             for i in range(n+2):
-                print("Share -> {}-{}".format(str(i),to_hex(polyInt.eval(i).n)))
+                print_user("Share -> {}-{}".format(str(i),to_hex(polyInt.eval(i).n)))
         else:
             coef = []
             coef.append(ms_int) # a_0 = ms
             for i in range(1, k):
-                coef.append(int(secrets.token_hex(64),16)) # k-1 coeficinets
+                coef.append(int(secrets.token_hex(64),16)) # k-1 coeficients
             
             poly = F(coef)
-            #print(poly)
-            # Generate n shares (i=2,...,n+2)
+            logging.debug(poly)
+            # Generem n shares (i=2,...,n+2)
             for i in range(n):
-                print("Share -> {}-{}".format(str(i),to_hex(poly.eval(i).n)))
+                print_user("Share -> {}-{}".format(str(i),to_hex(poly.eval(i).n)))
 
     elif args.subcommand == 'recover':
-        #share_list = split(m, k, master_seed, check)
-        #threshold_str = input("Insert number of shares: ")
-        #threshold = int(threshold_str)
+        #TODO: share_list = split(m, k, master_seed, check)
+       
         nshares = int(args.nshares)
 
         shares = []
         points = []
 
-        #TODO: check share format nnn#hex_number
+        #TODO: validar format de les particions
         
         for i in range(nshares):
             shares.append(input("Insert share #{} :".format(str(i))))
@@ -140,15 +137,15 @@ def main():
             y = int(shares[i].split('-')[1],16)
             points.append((x, y))
         
-        # Generate Lagrange Interpolation
+        # Generem Polinomi Interpolador de Lagrange
         polyInt = F.interpolate(points, K)
-        #print(polyInt)
-        #print(points)
+        logging.debug(polyInt)
+        logging.debug(points)
 
         if check_ms(polyInt.eval(0).n,polyInt.eval(1).n) :
-            print_trace("Checking shares","master seed recovered succesfully!")
-
-        print("Master seed recovered: {}".format(to_hex(polyInt.eval(0).n)))
+            print_trace("Mater Seed integrity ok")
+            
+        print_user("Master seed recovered: {}".format(to_hex(polyInt.eval(0).n)))
     else:
         parser.print_usage()
 

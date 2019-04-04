@@ -1,9 +1,12 @@
 import logging
-# Galois Field objects
+# Generem objectes a GF(p)
+# TODO: Afegir descripció a les funcions i comentaris
 
 def GF(p):
     class GaloisField():
-        """Galois Field objects"""
+        """Definim objectes a GF(p)"""
+
+        # TODO: Validar que 'p' és primer?
 
         def __init__(self, n):
             # TODO: Check te p is prime
@@ -64,10 +67,10 @@ def GF(p):
                 a = b; b = r; x2 = x1; x1 = x; y2 = y1; y1 = y
 
             d=a; x=x2; y=y2
-            return(d, x, y) # 'y' is not usefull
+            return(d, x, y) # 'y' no cal...
 
         def __str__(self):
-            return str(self.n) # + " (mod %d)" % (p)
+            return str(self.n) 
 
     GaloisField.p = p
     GaloisField.__name__ = "G(%d)" % (p)
