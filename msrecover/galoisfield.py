@@ -1,3 +1,4 @@
+import logging
 # Galois Field objects
 
 def GF(p):

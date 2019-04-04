@@ -1,4 +1,5 @@
 # Polynomial objects
+import logging
 from galoisfield import *
 
 def PolyRing(K):

@@ -2,23 +2,35 @@ import argparse
 import hashlib
 import secrets
 import datetime
+import logging
 
 
 def words2ms(password, passphrase):
-    ''' TODO '''
+    ''' 
+    Transforma les n paraules nemotècniques + password (BIP39) en la llavor mestre
+        Entrada: Paraules i password
+        Sortida: Llavor mestre en format HEX
+    
+    Nota: Utilitza la funció HMAC de derivació de calus PBKDF2 (itera 2048 vegades, seguint especificació BIP-0039)
+    '''
     
     salt = "mnemonic"+passphrase
-    print(password)
-    print(salt)
+    logging.debug(password)
+    logging.debug(salt)
     ms = hashlib.pbkdf2_hmac('sha512', password.encode('ascii'), salt.encode('ascii'), 2048)
 
     return ms.hex()
 
-def print_trace(title, text):
-    ''' TODO '''
-
-    s = '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
-    print("[{}] - {} - {}".format(s, title, text))
+def print_user(message):
+    '''
+    Treu per pantalla el missatger amb la data i hora del moment format ISO 8601  
+    Entrada: Qualsevol dada
+    Sortida: Mostra per pantalla [YYYY-MM-DD HH:MM:SS.ddd] <missatge>
+    
+    Nota: El missatge es converteix a string
+    '''
+        
+    print("[{}] {}".format(datetime.datetime.now().isoformat(' ', timespec='milliseconds'), str(message)))
 
 def sha512(s):
     ''' sha512 simplified str to int '''
@@ -52,12 +64,13 @@ def get_parser():
 
     # Step 1: Create an ArgumentParser object with description
     # Define object
+    
     parser = argparse.ArgumentParser(description='Master seed of a HDW backup and recover tool')
 
     # Add optional arguments of msrecover
     parser.add_argument('--version', action="store_true",
                         help='version of %(prog)s')
-    parser.add_argument('--verbose', action="store_true",
+    parser.add_argument('-v', '--verbose', type=int, choices=[0, 1, 2, 3, 4],
                         help='version of %(prog)s')
 
     # Add subparsers
@@ -65,11 +78,14 @@ def get_parser():
 
     # msrecover split parser
     parser_split = subparsers.add_parser('split', help='split help')
-    parser_split.add_argument('--validation', action='store_true', help="Put validation mark on shares")
+    parser_split.add_argument('shares', type=int, help="Number of shares to generate")
+    parser_split.add_argument('threshold', type=int, help="Threshold")
+    parser_split.add_argument('--check', action='store_true', help="Put check mark on shares")
     parser_split.add_argument('--bip39', action='store_true', help="Master Seed in BIP-0039 format")
 
     # msrecover recover parser
     parser_recover = subparsers.add_parser('recover', help='Recover master seed form "k" shares')
+    parser_recover.add_argument('nshares', type=int, help="Number of shares to recover the master seed")
     parser_recover.add_argument('--qrcode', action='store_true', help="Read shares from QR files") #need filenames as arguments!
 
     return parser
