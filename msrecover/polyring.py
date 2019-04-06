@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Polynomial objects
 # TODO: Afegir més comentaris al codi
 import logging

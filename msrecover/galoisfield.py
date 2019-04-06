@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 # Generem objectes a GF(p)
 # TODO: Afegir descripció a les funcions i comentaris
