@@ -8,6 +8,28 @@ import logging
 
 # TODO: Afegir més comentaris al codi
 
+def initialize_logging(verbose):
+    
+    _NO_LOG = 100
+    
+    # Inicitalitzant el logging
+    if verbose == None:
+        level_log = _NO_LOG
+    else:
+        if verbose == 0:
+            level_log = logging.DEBUG
+        elif verbose == 1:
+            level_log = logging.INFO
+        elif verbose == 2:
+            level_log = logging.WARNING
+        elif verbose == 3:
+            level_log = logging.ERROR
+        else:
+            level_log = logging.CRITICAL
+    
+    logging.basicConfig(format='[%(asctime)s.%(msecs)03d] [%(levelname)s] [%(module)s - %(funcName)s]: %(message)s',datefmt='%Y-%m-%d %H:%M:%S', level=level_log)
+    
+
 def words2ms(password, passphrase):
     ''' 
     Transforma les n paraules nemotècniques + password (BIP39) en la llavor mestre

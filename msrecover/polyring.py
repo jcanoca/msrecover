@@ -120,9 +120,6 @@ def PolyRing(K):
                 x.append(a)
                 y.append(b)
             
-            logging.debug("x= ",x)
-            logging.debug("y= ",y)
-
             lp = []
             pi = F([0])
             
@@ -133,11 +130,8 @@ def PolyRing(K):
                 r = F([1])
                 for j in range(l):
                     if j != k:
-                        logging.debug ("resta = ", (x[k]-x[j]))
                         inverso = K((x[k]-x[j]))**(-1) 
-                        logging.debug("inverso = ", inverso)
                         r *= F([-x[j],1]) * F([inverso])
-                logging.debug("lp ",k, " = ",r)
                 lp.append(r)
                 pi += F([y[k]]) * r
             
