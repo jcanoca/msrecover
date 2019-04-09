@@ -42,7 +42,7 @@ def words2ms(password, passphrase):
     salt = "mnemonic"+passphrase
     logging.debug(password)
     logging.debug(salt)
-    ms = hashlib.pbkdf2_hmac('sha512', password.encode('ascii'), salt.encode('ascii'), 2048)
+    ms = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt.encode('utf-8'), 2048)
 
     return ms.hex()
 
@@ -61,7 +61,7 @@ def sha512(s):
     ''' sha512 ssimplificat transforma str to int '''
 
     m = hashlib.sha512()
-    m.update(s.encode('ascii'))
+    m.update(s.encode('ascii')) # hex digits són ascii
     return int(m.hexdigest(), 16)
 
 def to_hex(m):

@@ -9,8 +9,8 @@ import split
 import recover
 
 # Treballem amb 521 bits (mínim 512)
-PRIME = 2**521 - 1
-#_PRIME = '10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004b'
+#PRIME = 2**521 - 1
+PRIME = int('10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004b',16)
 
 def main():
     '''Funció d'inici de l'aplicació msrecover '''
@@ -49,8 +49,8 @@ def main():
             ms_str = words2ms(words, passphrase)
         else:
             ms_str = input("Insert master seed of your HDW: ")
-        ms_int = int(ms_str, 16)
-        ms_str = to_hex(ms_int) # Dubte...
+        #ms_int = int(ms_str, 16)
+        #ms_str = to_hex(ms_int) # Dubte...
         #
         print_user("You've chosen a ({}, {})-threshold Shamir's schema".format(args.shares, args.threshold))
 
@@ -68,7 +68,7 @@ def main():
         #TODO: validar format de les particions
         nshares = int(args.nshares)
         for i in range(nshares):
-            share_list.append(input("Insert share #{} :".format(str(i))))
+            share_list.append(input("Insert share #{} : ".format(str(i))))
 
         master_seed = recover.recover(share_list, F, K)
         # TODO: Tractament soritda del "n" trosso (per pantalla, per fitxer,...)

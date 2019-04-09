@@ -23,4 +23,9 @@ def recover(share_list, F, K):
     
     master_seed = to_hex(polyInt.eval(0).n)
 
+    # En el cas de master seed començant per 0's, completem amb 0s per davant
+    if len(master_seed) < 128:
+        print_user("Master seed incomplete!")
+        master_seed = '0'*(128-len(master_seed)) + master_seed
+
     return master_seed
