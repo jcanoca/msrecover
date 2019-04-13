@@ -15,8 +15,20 @@ def split(n, k, master_seed_str, check, F, K):
         print_user("Exiting...")
         exit(0)
 
+    # n < PRIME
+    if n > K.p:
+        print_user("The number of shares is too large")
+        print_user("Exiting...")
+        exit(0)
+
     # Convertim master_seed a integer
     master_seed_int = int(master_seed_str, 16)
+
+    # master seed < PRIME
+    if master_seed_int > K.p:
+        print_user("Master Seed is too large")
+        print_user("Exiting...")
+        exit(0)
         
     if check == True:
         points = []
