@@ -5,6 +5,7 @@ import hashlib
 import secrets
 import datetime
 import logging
+import re
 
 # TODO: Afegir més comentaris al codi
 
@@ -84,6 +85,24 @@ def check_ms(p0, p1):
     else:
         return False
 
+def check_share(share):
+    ''' TODO: write a comment '''
+
+    regex = re.compile('[0-9]+[-#][0-9abcdef]+')
+
+    lshare = len(share)
+    m = regex.match(share)
+    if m:
+        if regex.match(share).end() - regex.match(share).start() == lshare:
+            print_user("Format OK {}".format(share))
+        else:
+            print_user("Format NOK {}".format(regex.match(share).group()))
+            return False
+    else:   
+        print_user("Error format")
+        return False
+    
+    return True
 
 def get_parser():
 
@@ -100,15 +119,15 @@ def get_parser():
     subparsers = parser.add_subparsers(title='Functions', description='Valid functions', dest='subcommand')
 
     # msrecover split parser
-    parser_split = subparsers.add_parser('split', help='split help')
+    parser_split = subparsers.add_parser('split', help="Backup master seed in 'n' shares")
     parser_split.add_argument('shares', type=int, help="Number of shares to generate")
     parser_split.add_argument('threshold', type=int, help="Threshold")
-    parser_split.add_argument('--check', action='store_true', help="Put check mark on shares")
+    parser_split.add_argument('--checksum', action='store_true', help="Add checksum on shares")
     parser_split.add_argument('--bip39', action='store_true', help="Master Seed in BIP-0039 format")
 
     # msrecover recover parser
     parser_recover = subparsers.add_parser('recover', help='Recover master seed form "k" shares')
     parser_recover.add_argument('nshares', type=int, help="Number of shares to recover the master seed")
-    parser_recover.add_argument('--qrcode', action='store_true', help="Read shares from QR files") #need filenames as arguments!
+    #parser_recover.add_argument('--qrcode', action='store_true', help="Read shares from QR files") #need filenames as arguments!
 
     return parser

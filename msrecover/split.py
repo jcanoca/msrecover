@@ -7,7 +7,7 @@ from polyring import *
 from ftools import *
 
 
-def split(n, k, master_seed_str, check, F, K):
+def split(n, k, master_seed_str, checksum, F, K):
 
     # Validem coherencia n,k
     if k > n:
@@ -30,7 +30,7 @@ def split(n, k, master_seed_str, check, F, K):
         print_user("Exiting...")
         exit(0)
         
-    if check == True:
+    if checksum == True:
         points = []
             
         # Fem p(0) = ms
@@ -40,6 +40,9 @@ def split(n, k, master_seed_str, check, F, K):
         points.append((1, sha512(master_seed_str)))
 
         # Generem k-2 punts aleatoris y_i de 512-bits
+        # TODO: Els k-2 valors de i, han de ser aleatoris o 
+        # el rang "range(ini,ini+k-2)" de valors de i
+        
         for i in range(k-2):
             y_str = secrets.token_hex(64) # TODO: parametritzar??
             y = int(y_str, 16)
@@ -66,7 +69,10 @@ def split(n, k, master_seed_str, check, F, K):
     # Generem n shares (i=2,...,n+2)
     share_list = []
     for i in range(2, n+2):
-        share = str(i) + '-' + to_hex(poly.eval(i).n)
+        if checksum == True:
+            share = str(i) + '#' + to_hex(poly.eval(i).n)
+        else:
+            share = str(i) + '-' + to_hex(poly.eval(i).n)
         share_list.append(share)
 
     return share_list

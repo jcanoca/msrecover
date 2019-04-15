@@ -4,13 +4,18 @@ import logging
 from polyring import *
 from ftools import *
 
-def recover(share_list, F, K):
+def recover(share_list, checksum, F, K):
      
     points = []
     # Recuperem punt (x, p(x)) del share
     for i in range(len(share_list)):
-        x = int(share_list[i].split('-')[0])
-        y = int(share_list[i].split('-')[1],16)
+        if checksum:
+            x = int(share_list[i].split('#')[0])
+            y = int(share_list[i].split('#')[1],16)
+        else:
+            x = int(share_list[i].split('-')[0])
+            y = int(share_list[i].split('-')[1],16)
+
         points.append((x, y))
         
     # Generem Polinomi Interpolador de Lagrange
@@ -18,8 +23,14 @@ def recover(share_list, F, K):
     logging.debug(polyInt)
     logging.debug(points)
 
-    if check_ms(polyInt.eval(0).n,polyInt.eval(1).n) :
-        print_user("Mater Seed integrity ok")
+    # TODO: Modificar nom rutina "check_ms" per "checksum_ms"
+    if checksum:
+        if check_ms(polyInt.eval(0).n,polyInt.eval(1).n):
+            print_user("Mater Seed integrity ok")
+        else:
+            print_user("Mater Seed integrity NOK")
+            print_user("Exiting...")
+            exit(0)
     
     master_seed = to_hex(polyInt.eval(0).n)
 
