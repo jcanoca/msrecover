@@ -7,7 +7,8 @@ from polyring import *
 from ftools import *
 
 
-def split(n, k, master_seed_str, checksum, F, K):
+def split(n, k, secret_str, checksum, F, K):
+    '''Funció per dividir el secret en "n" parts amb un llindar de "t" participacions'''
 
     # Validem coherencia n,k
     if k > n:
@@ -21,12 +22,12 @@ def split(n, k, master_seed_str, checksum, F, K):
         print_user("Exiting...")
         exit(0)
 
-    # Convertim master_seed a integer
-    master_seed_int = int(master_seed_str, 16)
-
+    # Convertim entropy a integer
+    secret_int = int(secret_str, 2)
+    
     # master seed < PRIME
-    if master_seed_int > K.p:
-        print_user("Master Seed is too large")
+    if secret_int > K.p:
+        print_user("Secret is too large")
         print_user("Exiting...")
         exit(0)
         
@@ -34,17 +35,17 @@ def split(n, k, master_seed_str, checksum, F, K):
         points = []
             
         # Fem p(0) = ms
-        points.append((0, master_seed_int))
+        points.append((0, secret_int))
 
-        # Fem p(1) = sha512(ms)
-        points.append((1, sha512(master_seed_str)))
+        # Fem p(1) = shaNNN(secret)
+        p_1 = SHA(to_hex(secret_int))
+        points.append((1, p_1))
 
-        # Generem k-2 punts aleatoris y_i de 512-bits
-        # TODO: Els k-2 valors de i, han de ser aleatoris o 
-        # el rang "range(ini,ini+k-2)" de valors de i
+        # Generem k-2 punts aleatoris y_i de 256-bits = 32-bytes
+        long_bytes = 32
         
         for i in range(k-2):
-            y_str = secrets.token_hex(64) # TODO: parametritzar??
+            y_str = secrets.token_hex(long_bytes)
             y = int(y_str, 16)
             points.append((i+2, y)) # No guardem i=0,1 
 
@@ -56,10 +57,12 @@ def split(n, k, master_seed_str, checksum, F, K):
 
         # Check p(1) = sha512(p(0))
         if check_ms(poly.eval(0).n, poly.eval(1).n) :
-            print_user("Mater Seed integrity ok")
+            print_user("Mater Seed integrity OK")
+        else:
+            print_user("Mater Seed integrity NOK!!!")
     else:
         coef = []
-        coef.append(master_seed_int) # a_0 = ms
+        coef.append(secret_int) # a_0 = ms
         for i in range(1, k):
             coef.append(int(secrets.token_hex(64),16)) # k-1 coeficients
             

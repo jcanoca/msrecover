@@ -6,10 +6,10 @@ import secrets
 import datetime
 import logging
 import re
-
-# TODO: Afegir més comentaris al codi
+from pathlib import Path
 
 def initialize_logging(verbose):
+    '''Funció per inicialitzar el logging a l'aplicació'''
     
     _NO_LOG = 100
     
@@ -30,6 +30,88 @@ def initialize_logging(verbose):
     
     logging.basicConfig(format='[%(asctime)s.%(msecs)03d] [%(levelname)s] [%(module)s - %(funcName)s]: %(message)s',datefmt='%Y-%m-%d %H:%M:%S', level=level_log)
     
+
+def load_words_bip39(language):
+    '''Carrega les paraules nemotècniques i les torna en una llista en funció de l'idioma escollit'''
+    
+    if language == 'en':
+        wordlist_folder = Path("./wordlists")
+
+    wordlist_file = wordlist_folder / "english.txt" 
+
+    with open(wordlist_file) as f:
+        words = f.read()
+    f.close()
+
+    return words.split("\n")
+
+def validate_words(words, language):
+    '''Valida que les paraules informades siguin vàlides BIP-0039'''
+    
+    coderror = 0
+    wordlist = load_words_bip39(language)
+    for w in words:
+        if w not in wordlist:
+            s = "Wrong word " + str(w)
+            print_user(s)
+            coderror = -1
+    
+    return coderror
+
+def words2entropy(words, language):
+    '''A partir de les n paraules nemotècniques trobem la entropia original'''
+    N = len(words)
+
+    # Recover entropy from words
+    wordlist = load_words_bip39(language)
+    index_list = [bin(wordlist.index(word)).lstrip('0b').zfill(11) for word in words]
+    CL = N // 3
+    entropy_cs  = "".join(index_list)    
+    entropy = entropy_cs[:-CL]
+
+    return entropy
+
+def entropy2words(entropy, language):
+    '''A partir del valor d'entropia generem les n words nemotècniques
+       entropy en bits
+    '''
+    wordlist = load_words_bip39(language)
+    
+    ENT = bin(int(entropy,16)).lstrip('0b')
+
+    #print("ENT: ", ENT)
+    #print("LEN:", len(ENT))
+    if len(ENT) <= 128:
+        N = 128
+        CL = 4
+    elif len(ENT) <= 160:
+        N = 160
+        CL = 5
+    elif len(ENT) <= 192:
+        N = 192
+        CL = 6
+    elif len(ENT) <= 224:
+        N = 224
+        CL = 7
+    else:
+        N = 256
+        CL = 8
+    
+    ENT = ENT.zfill(N)
+
+    m = hashlib.sha256()
+    
+    m.update(bytes.fromhex(entropy))
+    #print(m.hexdigest())
+
+    a = bin(int(m.hexdigest()[0],16)).lstrip('0b').zfill(4) + bin(int(m.hexdigest()[1],16)).lstrip('0b').zfill(4)
+    
+    checksum = a[:CL]
+    
+    c = ENT + checksum
+    #print ("ENT f:" ,ENT)
+    #print ("CS f:", checksum)
+    return " ".join([wordlist[int(c[i:i+11],2)] for i in range(0,len(c),11)])
 
 def words2ms(password, passphrase):
     ''' 
@@ -58,10 +140,25 @@ def print_user(message):
         
     print("[{}] {}".format(datetime.datetime.now().isoformat(' ', timespec='milliseconds'), str(message)))
 
+def SHA(s):
+    ''' sha embolcall segons longitud del secret'''
+
+    if len(s) <= 256:
+       return sha256(s)
+    else:
+        return sha512(s)
+
 def sha512(s):
     ''' sha512 ssimplificat transforma str to int '''
 
     m = hashlib.sha512()
+    m.update(s.encode('ascii')) # hex digits són ascii
+    return int(m.hexdigest(), 16)
+
+def sha256(s):
+    ''' sha256 ssimplificat transforma str to int '''
+
+    m = hashlib.sha256()
     m.update(s.encode('ascii')) # hex digits són ascii
     return int(m.hexdigest(), 16)
 
@@ -71,10 +168,13 @@ def to_hex(m):
 
 def check_ms(p0, p1):
     ''' Validem si 
-        p(1) == sha512(master seed = p(0))
+        p(1) == shaNNN(secret = p(0))
+        p0, p1 integers
     '''
+
     ms_rec = to_hex(p0)
-    hash_ms_rec = to_hex(sha512(ms_rec))
+    
+    hash_ms_rec = to_hex(SHA(ms_rec))
     hash_ms_eva = to_hex(p1)
     
     logging.debug("p(1) = {}".format(hash_ms_eva))
@@ -120,14 +220,16 @@ def get_parser():
 
     # msrecover split parser
     parser_split = subparsers.add_parser('split', help="Backup master seed in 'n' shares")
-    parser_split.add_argument('shares', type=int, help="Number of shares to generate")
-    parser_split.add_argument('threshold', type=int, help="Threshold")
+    parser_split.add_argument('-n','--nshares', type=int, help="Number of shares to generate", required=True)
+    parser_split.add_argument('-t','--threshold', type=int, help="Threshold", required=True)
     parser_split.add_argument('--checksum', action='store_true', help="Add checksum on shares")
-    parser_split.add_argument('--bip39', action='store_true', help="Master Seed in BIP-0039 format")
+    parser_split.add_argument('--bip39', nargs='+', help="Master Seed in BIP-0039 format")
+    parser_split.add_argument('-l','--lang', type=str, help="Wordlist language")
+    parser_split.add_argument('--qrcode', action='store_true', help="Write shares to files in QR format")
 
     # msrecover recover parser
     parser_recover = subparsers.add_parser('recover', help='Recover master seed form "k" shares')
-    parser_recover.add_argument('nshares', type=int, help="Number of shares to recover the master seed")
-    #parser_recover.add_argument('--qrcode', action='store_true', help="Read shares from QR files") #need filenames as arguments!
+    parser_recover.add_argument('-n','--nshares', type=int, help="Number of shares to recover the master seed")
+    parser_recover.add_argument('--qrcode', type=str, help="Read shares in QR format from PATH")
 
     return parser

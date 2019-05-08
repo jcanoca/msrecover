@@ -23,7 +23,6 @@ def recover(share_list, checksum, F, K):
     logging.debug(polyInt)
     logging.debug(points)
 
-    # TODO: Modificar nom rutina "check_ms" per "checksum_ms"
     if checksum:
         if check_ms(polyInt.eval(0).n,polyInt.eval(1).n):
             print_user("Mater Seed integrity ok")
@@ -31,12 +30,12 @@ def recover(share_list, checksum, F, K):
             print_user("Mater Seed integrity NOK")
             print_user("Exiting...")
             exit(0)
-    
-    master_seed = to_hex(polyInt.eval(0).n)
 
-    # En el cas de master seed començant per 0's, completem amb 0s per davant
-    if len(master_seed) < 128:
-        print_user("Master seed incomplete!")
-        master_seed = '0'*(128-len(master_seed)) + master_seed
+    secret = to_hex(polyInt.eval(0).n)
 
-    return master_seed
+    #En el cas de master seed començant per 0's, completem amb 0s per davant
+    #if len(secret) < 128:
+    #    print_user("Master seed incomplete!")
+    #    secret = '0'*(128-len(secret)) + secret
+    secret = secret.zfill(32)
+    return secret
