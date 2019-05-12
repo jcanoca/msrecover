@@ -6,6 +6,12 @@ import secrets
 import datetime
 import logging
 import re
+import pyqrcode
+import os
+from os import listdir
+from os.path import isfile, join
+from PIL import Image
+from pyzbar.pyzbar import decode
 from pathlib import Path
 
 def initialize_logging(verbose):
@@ -204,6 +210,39 @@ def check_share(share):
     
     return True
 
+def list_shares_qrfiles(share_list, directory):
+    '''Funció que retorna la llista de fitxers de participacions en format QR '''
+    share_list_files = []
+
+    for share in share_list:
+        filename = share2qr(share, directory)
+        share_list_files.append(filename)
+    
+    return share_list_files
+
+def share2qr(share, directory):
+    '''Funció que crea un QR code amb la informació del text d'entrada i retorna el nom del fitxer creat'''
+    qr = pyqrcode.create(share)
+    filename = str(SHA(share))[0:16]+".png"
+    qr.png(join(directory, filename), scale=6)
+    return join(directory, filename)
+
+def list_qrfiles(directory):
+    ''' A partir d'un directori d'entrada llegeix tots els fitxers PNG amb QR Code'''
+    PNGfiles = [join(directory, pngfile) for pngfile in listdir(directory) if isfile(join(directory, pngfile)) and "png" in pngfile]
+    list_shares = []
+    for png in PNGfiles:
+        share = qr2share(png)
+        list_shares.append(share)
+    
+    return list_shares
+
+def qr2share(qrFile):
+    '''Funció que a partir d'una imatge d'un QR, extreu la informació en text que guarda'''
+    data = decode(Image.open(qrFile))
+    share = data[0].data.decode('utf-8')
+    return share
+
 def get_parser():
 
     # Creem un ArgumentParser objecte    
@@ -225,7 +264,7 @@ def get_parser():
     parser_split.add_argument('--checksum', action='store_true', help="Add checksum on shares")
     parser_split.add_argument('--bip39', nargs='+', help="Master Seed in BIP-0039 format")
     parser_split.add_argument('-l','--lang', type=str, help="Wordlist language")
-    parser_split.add_argument('--qrcode', action='store_true', help="Write shares to files in QR format")
+    parser_split.add_argument('--qrcode', type=str, help="Write shares to files in QR format")
 
     # msrecover recover parser
     parser_recover = subparsers.add_parser('recover', help='Recover master seed form "k" shares')

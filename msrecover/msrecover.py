@@ -8,7 +8,6 @@ from ftools import *
 import split
 import recover
 
-
 # Treballem amb 256 bits per BIP39
 # Mateix primer que a "ecp256k1"
 PRIME = 2**256 - 2**32 - 2**9 - 2**8 - 2**7 - 2**6 - 2**4 - 1
@@ -81,8 +80,10 @@ def main():
 
         if args.qrcode:
             print_user("Generating {} QR codes in files".format(n))
-            for i in range(len(share_list)):
-                print_user("Share -> {} ".format(share_list[i]))
+            directory = args.qrcode
+            share_list_files = list_shares_qrfiles(share_list, directory)
+            for i in range(len(share_list_files)):
+                print_user("Files -> {} ".format(share_list_files[i]))
         else:
             for i in range(len(share_list)):
                 print_user("Share -> {} ".format(share_list[i]))
@@ -94,14 +95,27 @@ def main():
         # Validar format de les particions
         nshares = int(args.nshares)
 
-        i = 0
-        while i < nshares:
-            share = input("Insert share #{} : ".format(str(i)))    
-            if not check_share(share):
-                print_user("Format error, please repeat or exit using Ctrl-C...")
-            else:
-                share_list.append(share)
-                i += 1
+        # Entrada de les participacions per QR codes (fitxers) o manual
+        if args.qrcode:
+            directory = args.qrcode
+            share_list = list_qrfiles(directory)
+            if len(share_list) < nshares:
+                print_user("The number of shares is less than the threshold...")
+                print_user("Exiting...")
+                exit(0) 
+            if len(share_list) > nshares:
+                print_user("The number of files is greater than the threshold...")
+                print_user("Exiting...")
+                exit(0)   
+        else: # Entrada manual de les participacions
+            i = 0
+            while i < nshares:
+                share = input("Insert share #{} : ".format(str(i)))    
+                if not check_share(share):
+                    print_user("Format error, please repeat or exit using Ctrl-C...")
+                else:
+                    share_list.append(share)
+                    i += 1
         
         # Totes han de ser del mateix tipus!!
         if '-' in share_list[0]:
