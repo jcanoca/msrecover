@@ -25,17 +25,13 @@ def recover(share_list, checksum, F, K):
 
     if checksum:
         if check_ms(polyInt.eval(0).n,polyInt.eval(1).n):
-            print_user("Mater Seed integrity ok")
+            print_user("Mater Seed integrity OK", 0)
         else:
-            print_user("Mater Seed integrity NOK")
-            print_user("Exiting...")
+            print_user("Mater Seed integrity NOK", 2)
+            print_user("Exiting...", 1)
             exit(0)
 
     secret = to_hex(polyInt.eval(0).n)
-
-    #En el cas de master seed començant per 0's, completem amb 0s per davant
-    #if len(secret) < 128:
-    #    print_user("Master seed incomplete!")
-    #    secret = '0'*(128-len(secret)) + secret
     secret = secret.zfill(32)
+    
     return secret

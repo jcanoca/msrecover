@@ -8,18 +8,22 @@ from ftools import *
 
 
 def split(n, k, secret_str, checksum, F, K):
-    '''Funció per dividir el secret en "n" parts amb un llindar de "t" participacions'''
+    '''Funció per dividir el secret en "n" parts amb un llindar de "t" participacions.
+       Entrada: 
+                n: número de participacions
+                k: llindar
+                secret
+                checksum: flag per afegir control integritat del secret
+                F: Anells de polinomis
+                K: Cos Finit
+       Sortida:
+                Llista de 'n' participacions 
+    '''
 
-    # Validem coherencia n,k
-    if k > n:
-        print_user("The number of shares must be greater than the threshold")
-        print_user("Exiting...")
-        exit(0)
-
-    # n < PRIME
+    # Validació "formal": n < PRIME
     if n > K.p:
-        print_user("The number of shares is too large")
-        print_user("Exiting...")
+        print_user("The number of shares is too large", 2)
+        print_user("Exiting...", 1)
         exit(0)
 
     # Convertim entropy a integer
@@ -27,8 +31,8 @@ def split(n, k, secret_str, checksum, F, K):
     
     # master seed < PRIME
     if secret_int > K.p:
-        print_user("Secret is too large")
-        print_user("Exiting...")
+        print_user("Secret is too large", 2)
+        print_user("Exiting...", 1)
         exit(0)
         
     if checksum == True:
@@ -55,11 +59,13 @@ def split(n, k, secret_str, checksum, F, K):
         
         logging.debug((poly))
 
-        # Check p(1) = sha512(p(0))
+        # Check p(1) = sha256(p(0))
         if check_ms(poly.eval(0).n, poly.eval(1).n) :
-            print_user("Mater Seed integrity OK")
+            print_user("Mater Seed integrity OK", 0)
         else:
-            print_user("Mater Seed integrity NOK!!!")
+            print_user("Mater Seed integrity NOK", 2)
+            print_user("Exiting...", 1)
+            exit(0)
     else:
         coef = []
         coef.append(secret_int) # a_0 = ms
