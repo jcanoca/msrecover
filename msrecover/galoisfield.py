@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
-# Generem objectes a GF(p)
-# TODO: Afegir descripció a les funcions i comentaris
 
+# Generem objectes a GF(p)
 def GF(p):
+    '''Funció que retorna un ojecte de la classe GaloisField'''
     class GaloisField():
         """Definim objectes a GF(p)"""
 
-        # TODO: Validar que 'p' és primer?
-
+        # Suposme que p és nombre primer
         def __init__(self, n):
-            # TODO: Check te p is prime
             self.n = n % p
             self.field = GaloisField
 

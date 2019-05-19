@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # Polynomial objects
-# TODO: Afegir més comentaris al codi
+
 import logging
 from galoisfield import *
 
 def PolyRing(K):
 
-    
     class Poly():
         """
             Definició d'un polinomi sobre un cos finit
@@ -20,7 +19,6 @@ def PolyRing(K):
             self.coef = [K(ele) for ele in coef]
             self.dg = self.__dg()
         
-        # TODO:  review...
         def __str__(self):
             """ Com mostrem el polinomi (str) """
             s = ''
@@ -54,7 +52,7 @@ def PolyRing(K):
                     if i <= other.dg:
                         r.append(other.coef[i])
                     else:
-                        raise ValueError('Error') # TODO: Millorar tractament
+                        raise ValueError('Error') 
 
             return Poly(r)
         

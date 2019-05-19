@@ -36,9 +36,10 @@ def banner():
 
 def main():
     '''Funció d'inici de l'aplicació msrecover. 
-        Té dues funcionalitats bàsiques:
+        Té tres funcionalitats bàsiques:
             * SPLIT el secret en n participacions amb un llindar de k participacions
             * RECOVER el secret a partir de k participacions
+            * DERIVE la master seed a partir de les paraules mnemotècniques i la passphrase (opcional)
     '''
 
     # Llegim els arguments de la linea de comandaments
@@ -193,6 +194,8 @@ def main():
                 print_user("Exiting...", 1)
                 exit(0)
         
+        sout = "Language used recovering your secret is...{}".format(lang[:-4])
+        print_user(sout, 1)
         words = entropy2words(secret, lang)
 
         print_user("Secret: {}".format(words), 0)
@@ -215,8 +218,10 @@ def main():
             exit(0)
         
         if args.passphrase:
+            print_user("Passphrase used",1)
             passphrase = args.passphrase
         else:
+            print_user("No passphrase used",1)
             passphrase = ""
         
         # Derive ms from words+passphrase amd display master seed

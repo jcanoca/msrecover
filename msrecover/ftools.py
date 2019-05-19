@@ -145,8 +145,6 @@ def words2ms(words, passphrase):
     '''
     str_words = " ".join(words)
     salt = "mnemonic"+passphrase
-    print (str_words)
-    print (salt)
     logging.debug(str_words)
     logging.debug(salt)
     ms = hashlib.pbkdf2_hmac('sha512', str_words.encode('utf-8'), salt.encode('utf-8'), 2048)
@@ -220,7 +218,7 @@ def check_ms(p0, p1):
         return False
 
 def check_share(share):
-    ''' TODO: write a comment '''
+    ''' Funció per validar formalment el valor de una participació  '''
 
     regex = re.compile('[0-9]+[-#][0-9abcdef]+')
 

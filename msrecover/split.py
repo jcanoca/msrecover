@@ -68,9 +68,10 @@ def split(n, k, secret_str, checksum, F, K):
             exit(0)
     else:
         coef = []
+        long_bytes = 32
         coef.append(secret_int) # a_0 = ms
         for i in range(1, k):
-            coef.append(int(secrets.token_hex(64),16)) # k-1 coeficients
+            coef.append(int(secrets.token_hex(long_bytes),16)) # k-1 coeficients
             
         poly = F(coef)
         logging.debug(poly)
