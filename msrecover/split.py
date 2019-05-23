@@ -24,7 +24,7 @@ def split(n, k, secret_str, checksum, F, K):
     if n > K.p:
         print_user("The number of shares is too large", 2)
         print_user("Exiting...", 1)
-        exit(0)
+        exit(1)
 
     # Convertim entropy a integer
     secret_int = int(secret_str, 2)
@@ -33,7 +33,7 @@ def split(n, k, secret_str, checksum, F, K):
     if secret_int > K.p:
         print_user("Secret is too large", 2)
         print_user("Exiting...", 1)
-        exit(0)
+        exit(1)
         
     if checksum == True:
         points = []
@@ -65,7 +65,7 @@ def split(n, k, secret_str, checksum, F, K):
         else:
             print_user("Mater Seed integrity NOK", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
     else:
         coef = []
         long_bytes = 32

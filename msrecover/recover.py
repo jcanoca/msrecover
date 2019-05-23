@@ -29,7 +29,7 @@ def recover(share_list, checksum, F, K):
         else:
             print_user("Mater Seed integrity NOK", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
     else:
         print_user("No need to check integrity", 1)
 

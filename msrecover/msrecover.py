@@ -53,7 +53,7 @@ def main():
     # Versió del mòdul
     if args.version:
         print_user("msrecover 1.0.0", 1)
-        exit(0)
+        exit(1)
 
     # Inicialitzem cos finit i anell de polinomis sobre aquest cos finit
     K = GF(PRIME)
@@ -69,20 +69,19 @@ def main():
         if n < 2:
             print_user("Number of shares to generate must be greater than 1", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
 
         # Validem que el llindar ha de ser més petit o igual que el número de participacions
         if n < k:
             print_user("Number of shares 'n' must be greater than threshold 't'", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
         
         # Validem que el llindar ha de ser més gran que 1.
-        # És possible però no té cap sentit
         if k < 2:
             print_user("Threshold 't' must bebe greater than threshold 1", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
 
         # Si hem informat la llista de paraules des de linea de comandament 
         if args.bip39:
@@ -94,18 +93,24 @@ def main():
             if words == "":
                 print_user("There nust be al least 12 words", 2)
                 print_user("Exiting...", 1)
-                exit(0)
+                exit(1)
             
             word_list = words.split(" ")
-
+        
+        # Validem que el número de paraules ha d'estar entre el mínim i el màxim
         if len(word_list) < MIN_NUM_WORDS or len(word_list) > MAX_NUM_WORDS:
             print_user("Number of words incorrect. Must be between 12 and 24 words.", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
+        else:
+            if len(word_list) != 12 and len(word_list) != 15 and len(word_list) != 18 and \
+               len(word_list) != 21 and len(word_list) != 24:
+                print_user("The number of words must be: 12, 15, 18, 21 or 24", 2)
+                print_user("Exiting...", 1)
+                exit(1)
 
-        # Idioma per defecte "en" (english)
+        # Detectem idioma amb la primera paraula si no ha estat informat
         if not args.lang:
-            # Detectem idioma amb la primera paraula
             word = word_list[0]
             lang = detect_language(word)
         else:
@@ -116,16 +121,30 @@ def main():
             else:
                 print_user("Language not suported", 2)
                 print_user("Exiting...", 1)
-                exit(0)
+                exit(1)
+        # Ens quedem el nom de l'idioma a partir del nom del fixer  
+        long_lang = lang.split('.txt')[0]
 
+        # Validem que les paraules introuides existeixin a la wordlist definida
+        # a l'estàndar BIP39
         if validate_words(word_list, lang) != 0:
             print_user("Some word is wrong...", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
 
+        # Calculem la entropia (secret) a partir de les paraules
         secret_str = words2entropy(word_list, lang)
         
+        # Si "None" vol dir que el checksum de la llista de paraules no és correcte
+        # és a dir, l'ordre de la llista de paraules no és vàlida.
+        if secret_str == None:
+            print_user("Invalid mnemomic words", 2)
+            print_user("Exiting...", 1)
+            exit(1)
+
+        
         print_user("You've chosen a ({}, {})-threshold Shamir's schema".format(args.nshares, args.threshold), 1)
+        print_user("The language of your mnemonic words is {} ".format(long_lang), 1)
 
         # Generem els "n" trossos
         share_list = split.split(n, k, secret_str, args.checksum, F, K)
@@ -133,54 +152,76 @@ def main():
         if args.qrcode:
             print_user("Generating {} QR codes in files".format(n), 1)
             directory = args.qrcode
-            share_list_files = list_shares_qrfiles(share_list, directory)
+            # Només per QR code, afegim al darrere informació del número primer que
+            # s'ha fet servir per crear les participacions
+            share_list_qr = []
+            for share in share_list:
+                if args.checksum:
+                    share_list_qr.append(share+"#PRIME="+hex(PRIME))
+                else:
+                    share_list_qr.append(share+"-PRIME="+hex(PRIME))
+
+            share_list_files = list_shares_qrfiles(share_list_qr, directory)
             for i in range(len(share_list_files)):
-                print_user("Files -> {} ".format(share_list_files[i]), 0)
+                print_user("File -> {} ".format(share_list_files[i]), 0)
         else:
             for i in range(len(share_list)):
                 print_user("Share -> {} ".format(share_list[i]), 0)
-        
+
+        print_user("The PRIME number used was: {} ".format(hex(PRIME)), 1)
+
     elif args.subcommand == 'recover':
         # Recover master seed form 'k' shares
         share_list = []
 
         # Validar format de les particions
-        nshares = int(args.nshares)
+        kshares = int(args.kshares)
 
         # Entrada de les participacions per QR codes (fitxers) o manual
         if args.qrcode:
             directory = args.qrcode
             share_list = list_qrfiles(directory)
-            if len(share_list) < nshares:
+            # Validem que el número de fitxers sigui exactament al número indicat per línia de comandament
+            if len(share_list) < kshares:
                 print_user("The number of shares is less than the threshold...", 2)
                 print_user("Exiting...", 1)
-                exit(0) 
-            if len(share_list) > nshares:
+                exit(1) 
+            if len(share_list) > kshares:
                 print_user("The number of files is greater than the threshold...", 2)
                 print_user("Exiting...", 1)
-                exit(0)   
+                exit(1)   
         else: # Entrada manual de les participacions
             i = 0
-            while i < nshares:
+            while i < kshares:
                 share = input("Insert share #{} : ".format(str(i)))    
                 share_list.append(share)
                 i += 1
         
         # Validem format de les participacions llegides
+        # Totes han de ser del mateix tipus!!
+        chk_si = 0
+        chk_no = 0
         for share in share_list:
             if not check_share(share):
                 print_user("Format error, please repeat or exit using Ctrl-C...", 2)
                 print_user("Exiting", 1)
-                exit(0)
-
-        # Totes han de ser del mateix tipus!!
-        if '-' in share_list[0]:
-            checksum = False
-        else:
+                exit(1)
+            if '-' in share:
+                chk_no += 1
+            else:
+                chk_si += 1
+        
+        if chk_si > 0 and chk_no > 0:
+            print_user("There are some shares mixed!", 2)
+            print_user("Exiting...", 1)
+            exit(1)
+        elif chk_si > 0:
             checksum = True
-        
+        else:
+            checksum = False
+
         secret = recover.recover(share_list, checksum, F, K)
-        
+
         # Idioma per defecte "en" (english)
         if not args.lang:
             lang = "english.txt"
@@ -192,9 +233,12 @@ def main():
             else:
                 print_user("Language not suported", 2)
                 print_user("Exiting...", 1)
-                exit(0)
+                exit(1)
         
-        sout = "Language used recovering your secret is...{}".format(lang[:-4])
+        # Ens quedem el nom de l'idioma a partir del nom del fixer  
+        long_lang = lang.split('.txt')[0]
+        
+        sout = "Language used recovering your secret is...{}".format(long_lang)
         print_user(sout, 1)
         words = entropy2words(secret, lang)
 
@@ -206,7 +250,13 @@ def main():
         if len(word_list) < MIN_NUM_WORDS or len(word_list) > MAX_NUM_WORDS:
             print_user("Number of words incorrect. Must be between 12 and 24 words.", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
+        else:
+            if len(word_list) != 12 and len(word_list) != 15 and len(word_list) != 18 and \
+               len(word_list) != 21 and len(word_list) != 24:
+                print_user("The number of words must be: 12, 15, 18, 21 or 24", 2)
+                print_user("Exiting...", 1)
+                exit(1)
 
         # Detectem idioma amb la primera paraula
         word = word_list[0]
@@ -215,7 +265,7 @@ def main():
         if validate_words(word_list, lang) != 0:
             print_user("Some word is wrong...", 2)
             print_user("Exiting...", 1)
-            exit(0)
+            exit(1)
         
         if args.passphrase:
             print_user("Passphrase used",1)
