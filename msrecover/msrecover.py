@@ -147,7 +147,8 @@ def main():
         print_user("The language of your mnemonic words is {} ".format(long_lang), 1)
 
         # Generem els "n" trossos
-        share_list = split.split(n, k, secret_str, args.checksum, F, K)
+        chksum = not args.nochecksum
+        share_list = split.split(n, k, secret_str, chksum, F, K)
 
         if args.qrcode:
             print_user("Generating {} QR codes in files".format(n), 1)
@@ -156,7 +157,7 @@ def main():
             # s'ha fet servir per crear les participacions
             share_list_qr = []
             for share in share_list:
-                if args.checksum:
+                if chksum:
                     share_list_qr.append(share+"#PRIME="+hex(PRIME))
                 else:
                     share_list_qr.append(share+"-PRIME="+hex(PRIME))
