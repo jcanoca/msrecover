@@ -22,12 +22,12 @@ def recover(share_list, checksum, F, K):
     polyInt = F.interpolate(points, K)
     logging.debug(polyInt)
     logging.debug(points)
-
+    
     if checksum:
         if check_ms(polyInt.eval(0).n,polyInt.eval(1).n):
-            print_user("Mater Seed integrity OK", 0)
+            print_user("Master Seed integrity OK", 0)
         else:
-            print_user("Mater Seed integrity NOK", 2)
+            print_user("Master Seed integrity NOK", 2)
             print_user("Exiting...", 1)
             exit(1)
     else:

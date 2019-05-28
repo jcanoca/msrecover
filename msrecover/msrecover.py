@@ -88,7 +88,7 @@ def main():
             word_list = args.bip39
         else:
             # Si no indiquen res demanem les dades per pantalla
-            words = input("Insert nmonemic words (space between words): ")
+            words = input("Insert mnemonic words (space between words): ")
             
             if words == "":
                 print_user("There nust be al least 12 words", 2)
