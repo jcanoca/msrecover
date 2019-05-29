@@ -267,6 +267,20 @@ def check_share(share):
     else:
         lshare = len(share)
     
+    # Validem longitud share y = p(x), ha de ser 64 digits hex (32 bytes)
+    if '-' in share:
+        idy = share.index('-')
+    else:
+        idy = share.index('#')
+
+    if lshare - idy - 1 < 64:
+        print_user("Share too short...", 2)
+        return False
+    
+    if lshare - idy - 1 > 64:
+        print_user("Share too larger...", 2)
+        return False
+
     m = regex.match(share)
     
     if m:
@@ -276,7 +290,7 @@ def check_share(share):
             print_user("Format NOK {}".format(regex.match(share).group()), 2)
             return False
     else:   
-        print_user("Error format", 2)
+        print_user("There are some strange characters in some share", 2)
         return False
     
     return True

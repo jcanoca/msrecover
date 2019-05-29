@@ -76,13 +76,14 @@ def split(n, k, secret_str, checksum, F, K):
         poly = F(coef)
         logging.debug(poly)
         
-    # Generem n shares (i=2,...,n+2)
+    # Generem n shares de 32 bytes (64 hex digits) (i=2,...,n+2)
+    # Si cal, afegim padding per davant
     share_list = []
     for i in range(2, n+2):
         if checksum == True:
-            share = str(i) + '#' + to_hex(poly.eval(i).n)
+            share = str(i) + '#' + to_hex(poly.eval(i).n).zfill(64)
         else:
-            share = str(i) + '-' + to_hex(poly.eval(i).n)
+            share = str(i) + '-' + to_hex(poly.eval(i).n).zfill(64)
         share_list.append(share)
 
     return share_list

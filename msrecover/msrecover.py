@@ -204,7 +204,7 @@ def main():
         chk_no = 0
         for share in share_list:
             if not check_share(share):
-                print_user("Format error, please repeat or exit using Ctrl-C...", 2)
+                print_user("Format error, please repeat", 2)
                 print_user("Exiting", 1)
                 exit(1)
             if '-' in share:
