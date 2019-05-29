@@ -1,2 +1,2 @@
 # msrecover
-backup and recover tool for master seed
+Backup and recover tool for BIP39 seed using BIP39 mnemoic words
