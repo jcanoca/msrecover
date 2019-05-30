@@ -21,7 +21,7 @@ def split(n, k, secret_str, checksum, F, K):
     '''
 
     # Validació "formal": n < PRIME
-    if n > K.p:
+    if n >= K.p:
         print_user("The number of shares is too large", 2)
         print_user("Exiting...", 1)
         exit(1)
@@ -30,7 +30,7 @@ def split(n, k, secret_str, checksum, F, K):
     secret_int = int(secret_str, 2)
     
     # master seed < PRIME
-    if secret_int > K.p:
+    if secret_int >= K.p:
         print_user("Secret is too large", 2)
         print_user("Exiting...", 1)
         exit(1)
