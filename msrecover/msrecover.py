@@ -147,7 +147,7 @@ def main():
         print_user("The language of your mnemonic words is {} ".format(long_lang), 1)
 
         # Generem els "n" trossos
-        chksum = not args.nochecksum
+        chksum = args.checksum
         share_list = split.split(n, k, secret_str, chksum, F, K)
 
         if args.qrcode:

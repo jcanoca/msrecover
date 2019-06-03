@@ -353,7 +353,7 @@ def get_parser():
     parser_split = subparsers.add_parser('split', help="Split BIP39 Mnemonic in 'n' shares")
     parser_split.add_argument('-n','--nshares', type=int, help="Number of shares to generate", required=True)
     parser_split.add_argument('-t','--threshold', type=int, help="Threshold", required=True)
-    parser_split.add_argument('-nc','--nochecksum', action='store_true', help="No checksum on shares")
+    parser_split.add_argument('-c','--checksum', action='store_true', help="Checksum on shares")
     parser_split.add_argument('-b','--bip39', nargs='+', help="BIP39 Mnemonic")
     parser_split.add_argument('-l','--lang', type=str, choices=['en', 'es'], help="ISO 639-1 language of wordlist")
     parser_split.add_argument('-q','--qrcode', type=str, help="Path to write shares in QR format to files")
