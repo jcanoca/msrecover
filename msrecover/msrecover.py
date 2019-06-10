@@ -143,7 +143,7 @@ def main():
             exit(1)
 
         
-        print_user("You've chosen a ({}, {})-threshold Shamir's schema".format(args.nshares, args.threshold), 1)
+        print_user("You've chosen a ({}, {})-threshold Shamir's schema".format(args.threshold, args.nshares), 1)
         print_user("The language of your mnemonic words is {} ".format(long_lang), 1)
 
         # Generem els "n" trossos
